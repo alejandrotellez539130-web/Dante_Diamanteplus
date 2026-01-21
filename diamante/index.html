@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DANTE DIAMANTE v1.0</title>
+    <style>
+        :root { --bg: #05070a; --main: #00ff41; --error: #ff3333; --panel: #0a0f14; }
+        body { background-color: var(--bg); color: var(--main); font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; border: 8px solid transparent; transition: border-color 0.8s ease; box-sizing: border-box; }
+        .terminal-box { border: 1px solid #333; background: var(--panel); padding: 25px; max-width: 450px; width: 90%; box-shadow: 0 0 20px rgba(0,255,65,0.05); border-radius: 12px; z-index: 10; }
+        h2 { margin: 0 0 15px 0; letter-spacing: 3px; border-bottom: 1px solid #222; padding-bottom: 10px; font-size: 1.2rem; }
+        input { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 6px; outline: none; margin-bottom: 15px; box-sizing: border-box; font-family: 'Courier New', monospace; font-size: 1rem; }
+        input:focus { border-color: var(--main); }
+        button { width: 100%; padding: 15px; background: #1a2e1f; color: var(--main); font-weight: bold; border: 1px solid var(--main); border-radius: 6px; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-family: 'Courier New', monospace; }
+        button:hover { background: var(--main); color: #000; box-shadow: 0 0 15px var(--main); }
+        #output { margin-top: 20px; padding: 15px; background: #000; border-left: 3px solid; display: none; text-align: left; white-space: pre-wrap; font-size: 0.85rem; line-height: 1.4; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="terminal-box">
+        <h2>[SISTEMA DIAMANTE]</h2>
+        <p style="font-size: 0.7rem; color: #666; margin-top: -10px; margin-bottom: 20px;">MÓDULO DE ESCANEO v1.0</p>
+        <input type="number" id="seed" placeholder="FECHA: YYYYMMDD">
+        <input type="text" id="mood" placeholder="ESTADO: ¿Cómo vibras hoy?">
+        <button onclick="ejecutarEngine()">ANCLAR FRECUENCIA</button>
+        <div id="output"></div>
+    </div>
+
+<script>
+const ODU_KEYS = ["Ogbe","Yekun","Iwori","Odi","Irosun","Owonrin","Obara","Okanran","Ogunda","Osa","Ika","Oturupon","Otura","Irete","Ose","Ofun"];
+const ODU_DB = {
+    "Ogbe": {b:"1111", v:"Claridad", d:"Ego"}, "Yekun": {b:"0000", v:"Profundidad", d:"Muerte"},
+    "Iwori": {b:"0110", v:"Lógica", d:"Duda"}, "Odi": {b:"1001", v:"Libertad", d:"Bloqueo"},
+    "Irosun": {b:"0101", v:"Visión", d:"Ilusión"}, "Owonrin": {b:"1010", v:"Cambio", d:"Caos"},
+    "Obara": {b:"0111", v:"Voz", d:"Mentira"}, "Okanran": {b:"1000", v:"Justicia", d:"Ira"},
+    "Ogunda": {b:"1110", v:"Fuerza", d:"Violencia"}, "Osa": {b:"0100", v:"Viento", d:"Miedo"},
+    "Ika": {b:"1100", v:"Poder", d:"Maldad"}, "Oturupon": {b:"0011", v:"Salud", d:"Enfermedad"},
+    "Otura": {b:"1011", v:"Verdad", d:"Confusión"}, "Irete": {b:"0010", v:"Presión", d:"Crueldad"},
+    "Ose": {b:"1101", v:"Amor", d:"Celos"}, "Ofun": {b:"0001", v:"Milagro", d:"Avaricia"}
+};
+
+function ejecutarEngine() {
+    const seed = document.getElementById('seed').value;
+    const moodInput = document.getElementById('mood').value.toLowerCase();
+    const out = document.getElementById('output');
+
+    if(!/^\d{8}$/.test(seed)) {
+        out.style.display = "block";
+        out.style.borderColor = "#ff3333";
+        out.style.color = "#ff3333";
+        out.innerHTML = "❌ ERROR: Ingresa 8 dígitos (YYYYMMDD).";
+        return;
+    }
+
+    const iP1 = parseInt(seed.slice(-2)) % 16;
+    const iP2 = parseInt(seed.slice(4,6)) % 16;
+    const padre = ODU_KEYS[iP1];
+    const madre = ODU_KEYS[iP2];
+
+    let zona = { n: "NEUTRAL", c: "#f1c40f", j: "Virgilio" };
+    if(moodInput.match(/feliz|bien|amor|paz|luz/)) zona = { n: "CREDULIDAD", c: "#ff00ff", j: "Dionisio" };
+    else if(moodInput.match(/dios|poder|yo|mando|ego/)) zona = { n: "EGO", c: "#00d4ff", j: "Zeus" };
+    else if(moodInput.match(/miedo|triste|no se|mal|duda/)) zona = { n: "IGNORANCIA", c: "#00ff41", j: "Tezcatlipoca" };
+
+    localStorage.setItem("dante_last_seed", seed);
+    localStorage.setItem("dante_last_zone", zona.n);
+
+    document.body.style.borderColor = zona.c;
+    out.style.display = "block";
+    out.style.borderColor = zona.c;
+    out.style.color = zona.c;
+    out.innerHTML = `
+[VIRGILIO]: Frecuencia Anclada.
+--------------------------------
+🆔 ODU: ${padre}-${madre}
+💾 BIN: ${ODU_DB[padre].b}::${ODU_DB[madre].b}
+✨ VIRTUD: ${ODU_DB[padre].v} + ${ODU_DB[madre].v}
+💀 SOMBRA: ${ODU_DB[padre].d} + ${ODU_DB[madre].d}
+📍 ESTADO: ZONA ${zona.n}
+⚠️ JEFE: ${zona.j}
+--------------------------------
+[SISTEMA DIAMANTE GUARDADO]`;
+}
+</script>
+</body>
+</html>
