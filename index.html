@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISTEMA DANTE | PROTOCOLO FINAL</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="scan-line"></div>
+    <div class="overlay"></div>
+
+    <div class="container">
+        <header>
+            <h1 class="glitch" data-text="SISTEMA DANTE">SISTEMA DANTE</h1>
+            <div id="console" class="console-box">
+                > INICIALIZANDO KERNEL...<br>
+                > CARGANDO LIBRERÍA DE ARQUETIPOS...
+            </div>
+        </header>
+
+        <div id="setup-form" class="input-zone hidden">
+            <div class="input-group">
+                <label>>> IDENTIFICACIÓN (NOMBRE):</label>
+                <input type="text" id="username" placeholder="EJ: FERNANDO" autocomplete="off" style="text-transform: uppercase;">
+            </div>
+            
+            <div class="input-group">
+                <label>>> COORDENADA TEMPORAL (NACIMIENTO):</label>
+                <input type="date" id="birthdate">
+            </div>
+            
+            <button id="btn-scan" class="cyber-btn">INICIAR ANCLAJE</button>
+        </div>
+
+        <div id="quiz-zone" class="hidden">
+            <div class="quote-box">
+                <p id="quote-display" class="typing-effect"></p>
+            </div>
+            <input type="text" id="author-guess" placeholder="¿QUIÉN DIJO ESTO?" autocomplete="off">
+            <button id="btn-verificar" class="cyber-btn">CONFIRMAR AUTORÍA</button>
+            <p id="intentos-display" class="status-text"></p>
+        </div>
+
+        <div id="next-level-zone" class="hidden">
+            <h2>>>> ACCESO TOTAL CONCEDIDO</h2>
+            <p>BIENVENIDO A LA REALIDAD, ARQUITECTO.</p>
+            <button id="btn-cap2" class="cyber-btn warning">ABRIR CAPÍTULO II</button>
+        </div>
+    </div>
+
+    <script type="module" src="js/core.js"></script>
+</body>
+</html>
