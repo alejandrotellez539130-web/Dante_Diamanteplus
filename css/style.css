@@ -1,0 +1,14 @@
+:root { --matrix: #00ff41; --dark: #050505; --alert: #ff3333; }
+body { background: var(--dark); color: var(--matrix); font-family: 'Courier New', monospace; margin: 0; padding: 20px; overflow-x: hidden; }
+.container { max-width: 600px; margin: 0 auto; border: 1px solid #333; padding: 20px; box-shadow: 0 0 20px rgba(0,255,65,0.1); }
+h1.glitch { font-size: 2em; letter-spacing: 5px; border-bottom: 2px solid var(--matrix); padding-bottom: 10px; text-align: center; }
+.console-box { height: 150px; overflow-y: auto; background: #000; border: 1px solid #333; padding: 10px; font-size: 0.9em; margin-bottom: 20px; color: #ccc; }
+.input-zone, #quiz-zone, #next-level-zone { margin-top: 20px; display: flex; flex-direction: column; gap: 15px; }
+input { background: #111; border: 1px solid var(--matrix); color: #fff; padding: 15px; font-family: inherit; font-size: 1.1em; text-transform: uppercase; }
+button.cyber-btn { background: #003300; color: var(--matrix); border: 1px solid var(--matrix); padding: 15px; font-weight: bold; cursor: pointer; transition: 0.3s; letter-spacing: 2px; }
+button.cyber-btn:hover { background: var(--matrix); color: #000; box-shadow: 0 0 15px var(--matrix); }
+.hidden { display: none !important; }
+.separator { border-top: 1px dashed #444; margin: 10px 0; }
+.success { color: var(--matrix); font-weight: bold; }
+.alert { color: var(--alert); font-weight: bold; }
+.metadata { font-size: 0.8em; color: #555; display: block; margin-top: 5px; }
