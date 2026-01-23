@@ -1,9 +1,0 @@
-npm init -y
-{
-  "name": "dante_diamanteplus",
-  "version": "1.0.0",
-  "description": "Sistema Dante Diamante – Evolutivo",
-  "scripts": {
-    "start": "node server.js"
-  }
-}
