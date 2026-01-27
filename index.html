@@ -3,52 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA DANTE | PROTOCOLO FINAL</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>VIRGILIO DIETRIX | SYSTEM</title>
+    
+    <script type="importmap">
+      { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
+    </script>
+
+    <style>
+        body { background-color: #050505; color: #cfcfcf; font-family: 'Consolas', monospace; padding: 10px; text-align: center; overflow-x: hidden; }
+        h1 { border-bottom: 1px solid #00ff41; padding-bottom: 5px; color: #00ff41; letter-spacing: 2px; font-size: 1.2em; text-transform: uppercase; }
+        
+        /* PANEL DE CONTROL */
+        .control-panel { margin-bottom: 20px; border: 1px solid #333; padding: 15px; background: #0a0a0a; }
+        input { background: #000; border: 1px solid #444; color: #00ff41; padding: 10px; width: 80%; text-align: center; margin-bottom: 5px; }
+        
+        /* INPUT PARA LA LLAVE */
+        .api-input { border-color: #444; color: #666; font-size: 0.8em; margin-bottom: 15px; }
+        .api-input:focus { border-color: #00ff41; color: #00ff41; }
+        
+        button { background: #002200; color: #00ff41; border: 1px solid #00ff41; padding: 12px 20px; font-weight: bold; margin-top: 10px; width: 90%; text-transform: uppercase; }
+        button:active { background: #00ff41; color: #000; }
+        
+        /* EL TABLERO (GRID 5x5) */
+        .board-container { 
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; 
+            max-width: 400px; margin: 0 auto; background: #111; padding: 5px; border: 2px solid #333;
+        }
+        .cell { aspect-ratio: 1; background: #080808; border: 1px solid #222; display: flex; align-items: center; justify-content: center; font-size: 1.5em; position: relative; }
+        
+        /* ZONAS */
+        .zone-virgilio { background: #0f1a0f; box-shadow: inset 0 0 10px #002200; }
+        .zone-interaccion { background: #1a1a10; }
+        .zone-caos { background: #1a0f0f; }
+
+        /* PIEZAS */
+        .piece { animation: spawn 0.5s ease-out; font-size: 0.7em; text-align: center; line-height: 1; }
+        .type-raiz { color: #88ff88; text-shadow: 0 0 5px #00ff00; }
+        .type-virtud { color: #88ffff; text-shadow: 0 0 5px #00ffff; }
+        .type-sombra { color: #ff8888; text-shadow: 0 0 5px #ff0000; }
+        .type-exceso { color: #ff00ff; text-shadow: 0 0 5px #ff00ff; font-weight: bold; }
+
+        /* REPORTE Y AI */
+        #tactical-report { margin-top: 20px; text-align: left; font-size: 0.9em; color: #aaa; border-top: 1px solid #333; padding: 15px; background: #080808; white-space: pre-wrap; }
+        .quote-box { margin-top: 10px; padding: 10px; border-left: 3px solid #00ff41; font-style: italic; color: #888; font-size: 0.9em; background: #0d0d0d; }
+        
+        /* LA RESPUESTA DE VIRGILIO */
+        .ai-response { margin-top: 15px; border: 1px dashed #00ff41; padding: 15px; color: #00ff41; font-family: 'Courier New', monospace; background: #000800; font-size: 0.95em; line-height: 1.4; }
+
+        @keyframes spawn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
 </head>
 <body>
-    <div class="scan-line"></div>
-    <div class="overlay"></div>
+    <h1>VIRGILIO DIETRIX v9.0</h1>
 
-    <div class="container">
-        <header>
-            <h1 class="glitch" data-text="SISTEMA DANTE">SISTEMA DANTE</h1>
-            <div id="console" class="console-box">
-                > INICIALIZANDO KERNEL...<br>
-                > CARGANDO LIBRERÍA DE ARQUETIPOS...
-            </div>
-        </header>
-
-        <div id="setup-form" class="input-zone hidden">
-            <div class="input-group">
-                <label>>> IDENTIFICACIÓN (NOMBRE):</label>
-                <input type="text" id="username" placeholder="EJ: FERNANDO" autocomplete="off" style="text-transform: uppercase;">
-            </div>
-            
-            <div class="input-group">
-                <label>>> COORDENADA TEMPORAL (NACIMIENTO):</label>
-                <input type="date" id="birthdate">
-            </div>
-            
-            <button id="btn-scan" class="cyber-btn">INICIAR ANCLAJE</button>
-        </div>
-
-        <div id="quiz-zone" class="hidden">
-            <div class="quote-box">
-                <p id="quote-display" class="typing-effect"></p>
-            </div>
-            <input type="text" id="author-guess" placeholder="¿QUIÉN DIJO ESTO?" autocomplete="off">
-            <button id="btn-verificar" class="cyber-btn">CONFIRMAR AUTORÍA</button>
-            <p id="intentos-display" class="status-text"></p>
-        </div>
-
-        <div id="next-level-zone" class="hidden">
-            <h2>>>> ACCESO TOTAL CONCEDIDO</h2>
-            <p>BIENVENIDO A LA REALIDAD, ARQUITECTO.</p>
-            <button id="btn-cap2" class="cyber-btn warning">ABRIR CAPÍTULO II</button>
-        </div>
+    <div class="control-panel">
+        <input type="password" id="apiKeyInput" class="api-input" placeholder="PEGAR LLAVE MAESTRA (Google API)">
+        <br>
+        <input type="text" id="userInput" placeholder="ALIAS / AGENTE" autocomplete="off">
+        <button onclick="manifestarPieza()">INICIAR ESCANEO</button>
     </div>
 
-    <script type="module" src="js/core.js"></script>
+    <div id="board" class="board-container"></div>
+
+    <div id="tactical-report">Sistema en espera...</div>
+
+    <script src="dante_totem_db.js"></script>
+
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
+        // CONFIGURACIÓN DEL TABLERO
+        const BOARD_SIZE = 5;
+        const CENTER = 2; 
+
+        function getZoneType(x, y) {
+            const dist = Math.max(Math.abs(x - CENTER), Math.abs(y - CENTER));
+            if (dist === 0) return "virgilio";
+            if (dist === 1) return "interaccion";
+            return "caos";
+        }
+
+        function initBoard() {
+            const board = document.getElementById("board");
+            board.innerHTML = "";
+            for (let y = 0; y < BOARD_SIZE; y++) {
+                for (let x = 0; x < BOARD_SIZE; x++) {
+                    const cell = document.createElement("div");
+                    cell.className = `cell zone-${getZoneType(x, y)}`;
+                    cell.id = `cell-${x}-${y}`;
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        const DANTE_ENGINE = {
+            textToDNA: (text) => {
+                if (!text || text.trim().length < 2) return null;
+                let hash = 0;
+                for (let i = 0; i < text.length; i++) { hash = (hash << 5) - hash + text.charCodeAt(i); hash &= 0xff; }
+                return Math.abs(hash);
+            },
+            getMeyi: (dna) => (dna % 16) + 1,
+            getSeed: () => (Math.floor(Date.now() / 1000) ^ (Math.floor(Date.now() / 1000) >> 8)) & 0xff
+        };
+
+        // EXPORTAMOS LA FUNCIÓN AL WINDOW
+        window.manifestarPieza = async function() {
+            initBoard(); 
+            const rawName = document.getElementById("userInput").value;
+            const apiKey = document.getElementById("apiKeyInput").value; 
+            const output = document.getElementById("tactical-report");
+            
+            if (!rawName) return;
+
+            // 1. CÁLCULO LOCAL
+            const userDNA = DANTE_ENGINE.textToDNA(rawName);
+            const seed = DANTE_ENGINE.getSeed();
+            const odu = userDNA ^ seed;
+            const pressure = parseFloat((odu / 255).toFixed(3));
+            const meyiID = DANTE_ENGINE.getMeyi(userDNA);
+
+            if (typeof TOTEM_SYSTEM === 'undefined') { output.innerHTML = "❌ ERROR: DB no cargada."; return; }
+            const tactical = TOTEM_SYSTEM.getEstadoTactico(meyiID, pressure);
+            const familiaLimpia = tactical.identity.split(" (")[0];
+
+            // 2. CLASIFICACIÓN
+            let tipoPieza = "raiz"; 
+            if (pressure > 0.38 && pressure <= 0.618) tipoPieza = "virtud";
+            if (pressure > 0.618 && pressure <= 0.85) tipoPieza = "sombra";
+            if (pressure > 0.85) tipoPieza = "exceso";
+
+            // 3. SPAWN
+            let targetX, targetY;
+            if (tipoPieza === "raiz") { 
+                targetX = CENTER; targetY = CENTER;
+            } else if (tipoPieza === "virtud") {
+                do { targetX = Math.floor(Math.random() * BOARD_SIZE); targetY = Math.floor(Math.random() * BOARD_SIZE); } 
+                while (getZoneType(targetX, targetY) !== "interaccion");
+            } else { 
+                do { targetX = Math.floor(Math.random() * BOARD_SIZE); targetY = Math.floor(Math.random() * BOARD_SIZE); } 
+                while (getZoneType(targetX, targetY) !== "caos");
+            }
+
+            // 4. RENDER VISUAL
+            const targetCell = document.getElementById(`cell-${targetX}-${targetY}`);
+            const iconMap = { "raiz": "🌱", "virtud": "✨", "sombra": "👁️", "exceso": "🔥" };
+            
+            targetCell.innerHTML = `
+                <div class="piece type-${tipoPieza}">
+                    <div style="font-size:2em">${iconMap[tipoPieza]}</div>
+                    <div>${tactical.manifestation}</div>
+                </div>
+            `;
+
+            // 5. REPORTE LOCAL
+            let log = `
+> AVATAR: <span style="color:#00ff41; font-weight:bold; font-size:1.2em;">${tactical.manifestation.toUpperCase()}</span>
+> SECTOR: ${familiaLimpia}
+> ESTADO: <span class="type-${tipoPieza}">${tipoPieza.toUpperCase()}</span> ${iconMap[tipoPieza]}
+> PRESIÓN: ${pressure}
+
+<div class="quote-box">"${tactical.quote}"
+— ${tactical.author}</div>`;
+            
+            output.innerHTML = log;
+
+            // 6. CONEXIÓN AI (VIRGILIO)
+            if (apiKey.trim().length > 20) {
+                output.innerHTML += `\n\n<span style="color:#444;">... Invocando a Virgilio ...</span>`;
+                
+                try {
+                    const genAI = new GoogleGenerativeAI(apiKey);
+                    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+                    // Alias para que tu prompt funcione directo
+                    const t = tactical;
+
+                    // TU PROMPT PERSONALIZADO
+                    const prompt = `
+### ROL: ERES "VIRGILIO" (SISTEMA OPERATIVO TÁCTICO v9.0)
+No eres un asistente virtual sumiso. Eres el GUÍA que evita que el usuario se convierta en un "Zombie" (Resident Evil / NPC).
+Tu tono es: Mexicano, Crudo, Directo ("Al chile"), de "Brother" que te dice tus verdades para que despiertes.
+
+### DATOS DEL USUARIO (NODO):
+- SECTOR: ${t.identity}
+- AVATAR ACTIVO: ${t.manifestation} (Esto es lo que el usuario está vibrando ahorita).
+- CITA MAESTRA: "${t.quote}" de ${t.author}.
+- PRESIÓN ACTUAL: ${pressure} (Si es > 0.618 es ALERTA).
+
+### TU MISIÓN (VIRGILIO):
+1. USA LA CITA COMO ESPEJO: Empieza explicándole por qué esa frase de ${t.author} le queda como anillo al dedo ahorita.
+2. DIAGNÓSTICO DE ZOMBIFICACIÓN:
+   - Si su Avatar es de SOMBRA/CAOS (ej. Jaula, Sol Negro, o presión > 0.618), dile: "Te estás convirtiendo en un NPC. Estás en modo Resident Evil. Reacciona."
+   - Si su Avatar es de VIRTUD (ej. Ratón, Toro), dile: "Vas bien, pero no te duermas o te comen los zombies."
+3. LA CURA (ACCIÓN TÁCTICA):
+   Dile qué tiene que hacer HOY para no ser un muerto viviente. Una acción concreta. Nada de "medita". Diles: "Suelta el dinero", "Habla con tu socio", "Rompe el espejo".
+
+### REGLA DE ORO:
+Sé breve (máximo 4 líneas). Sé letal. Haz que le duela un poquito para que sane. Cierra con una frase matona.
+`;
+
+                    const result = await model.generateContent(prompt);
+                    const response = await result.response;
+                    const text = response.text();
+
+                    output.innerHTML = log + `\n\n<div class="ai-response">>> VIRGILIO DICE:\n"${text}"</div>`;
+
+                } catch (error) {
+                    output.innerHTML = log + `\n\n<span style="color:red;">❌ Error de Conexión: La llave no abre la puerta.</span>`;
+                }
+            }
+        };
+
+        initBoard();
+    </script>
 </body>
 </html>
