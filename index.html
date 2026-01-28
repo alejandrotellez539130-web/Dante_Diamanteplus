@@ -3,52 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA DANTE | PROTOCOLO FINAL</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>DANTE 38433 | DIAMANTE PLUS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        /* --- ESTILOS VISUALES (PIEL) --- */
+        :root {
+            --primary: #00ff41;  /* Verde Terminal */
+            --alert: #ff3333;    /* Rojo Error */
+            --bg: #05070a;       /* Negro Profundo */
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--primary);
+            font-family: 'Share Tech Mono', monospace;
+            margin: 0; height: 100vh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        /* Efecto CRT */
+        .scan-line {
+            position: fixed; top: 0; left: 0; width: 100%; height: 5px;
+            background: rgba(0, 255, 65, 0.1);
+            animation: scan 3s linear infinite; pointer-events: none; z-index: 10;
+        }
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none; z-index: 9;
+        }
+        @keyframes scan { 0% { top: -5%; } 100% { top: 105%; } }
+
+        /* Contenedor Principal */
+        .container {
+            width: 90%; max-width: 500px;
+            border: 1px solid var(--primary);
+            padding: 20px;
+            background: rgba(0, 20, 0, 0.8);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.15);
+            z-index: 2; text-align: center;
+        }
+
+        h1 {
+            font-size: 2em; margin-bottom: 10px;
+            text-shadow: 2px 2px var(--alert);
+            letter-spacing: 3px;
+        }
+
+        .console-box {
+            border-top: 1px dashed var(--primary);
+            border-bottom: 1px dashed var(--primary);
+            padding: 15px; margin: 20px 0;
+            min-height: 100px; text-align: left;
+            font-size: 0.9em; line-height: 1.4;
+            color: #ccffcc; overflow-y: auto;
+            max-height: 200px;
+        }
+
+        /* Botones y Estados */
+        button {
+            background: #000; color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 15px 30px; font-family: inherit;
+            font-size: 1.1em; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px;
+            transition: 0.2s; width: 100%;
+        }
+        button:hover { background: var(--primary); color: #000; box-shadow: 0 0 15px var(--primary); }
+        button:disabled { border-color: #555; color: #555; cursor: wait; background: #111; box-shadow: none; }
+
+        .hidden { display: none !important; }
+        
+        /* Animación de voz activa */
+        .voice-active {
+            animation: pulse-red 1s infinite;
+            border-color: var(--alert) !important;
+            color: var(--alert) !important;
+        }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 5px var(--alert); } 50% { box-shadow: 0 0 20px var(--alert); } 100% { box-shadow: 0 0 5px var(--alert); } }
+
+    </style>
 </head>
 <body>
+
     <div class="scan-line"></div>
     <div class="overlay"></div>
 
     <div class="container">
-        <header>
-            <h1 class="glitch" data-text="SISTEMA DANTE">SISTEMA DANTE</h1>
-            <div id="console" class="console-box">
-                > INICIALIZANDO KERNEL...<br>
-                > CARGANDO LIBRERÍA DE ARQUETIPOS...
-            </div>
-        </header>
-
-        <div id="setup-form" class="input-zone hidden">
-            <div class="input-group">
-                <label>>> IDENTIFICACIÓN (NOMBRE):</label>
-                <input type="text" id="username" placeholder="EJ: FERNANDO" autocomplete="off" style="text-transform: uppercase;">
-            </div>
-            
-            <div class="input-group">
-                <label>>> COORDENADA TEMPORAL (NACIMIENTO):</label>
-                <input type="date" id="birthdate">
-            </div>
-            
-            <button id="btn-scan" class="cyber-btn">INICIAR ANCLAJE</button>
+        <h1>SISTEMA DANTE<br><span style="font-size:0.5em">[DIAMANTE PLUS v3.0]</span></h1>
+        
+        <div id="console" class="console-box">
+            > INICIALIZANDO PROCESADORES...<br>
         </div>
 
-        <div id="quiz-zone" class="hidden">
-            <div class="quote-box">
-                <p id="quote-display" class="typing-effect"></p>
-            </div>
-            <input type="text" id="author-guess" placeholder="¿QUIÉN DIJO ESTO?" autocomplete="off">
-            <button id="btn-verificar" class="cyber-btn">CONFIRMAR AUTORÍA</button>
-            <p id="intentos-display" class="status-text"></p>
+        <div id="start-zone">
+            <p>SINTETIZADOR DE FRECUENCIA LISTO.</p>
+            <button id="btn-init" onclick="iniciarSistema()">>>> ACTIVAR DANTE (VOZ)</button>
         </div>
 
-        <div id="next-level-zone" class="hidden">
-            <h2>>>> ACCESO TOTAL CONCEDIDO</h2>
-            <p>BIENVENIDO A LA REALIDAD, ARQUITECTO.</p>
-            <button id="btn-cap2" class="cyber-btn warning">ABRIR CAPÍTULO II</button>
+        <div id="voice-zone" class="hidden">
+            <p style="font-size: 0.8em; color: #888;">MANTÉN PRESIONADO PARA HABLAR</p>
+            <button id="btn-talk" onmousedown="startRecording()" onmouseup="stopRecording()" ontouchstart="startRecording()" ontouchend="stopRecording()">
+                🎙️ PUSH TO TALK
+            </button>
+            <p id="status-msg" style="margin-top:10px; font-size:0.8em;">ESPERANDO AUDIO...</p>
         </div>
     </div>
 
-    <script type="module" src="js/core.js"></script>
-</body>
-</html>
+    <script>
+        // ==========================================
+        // 🛑 CONFIGURACIÓN CRÍTICA DEL ARQUITECTO
+        // ==========================================
+        const API_KEY = "AIzaSyC3I08oyl9lEzGpRomPZyLTV6OrD0z37vM"; // <--- ¡PEGA TU LLAVE AQUÍ!
+        const SYSTEM_PROMPT = "Eres Dante, un sistema crudo y directo con personalidad mexicana. Respuestas breves.";
+        // ==========================================
+
+        const consola = document.getElementById('console');
+        const btnTalk = document.getElementById('btn-talk');
+        const statusMsg = document.getElementById('status-msg');
+        
+        let mediaRecorder;
+        let audioChunks = [];
+
+        // FUNCIÓN DE LOG
+        function log(msg) {
+            consola.innerHTML += `> ${msg}<br>`;
+            consola.scrollTop = consola.scrollHeight;
+        }
+
+        // 1. INICIALIZACIÓN DEL SISTEMA
+        async function iniciarSistema() {
+            if(API_KEY === "TU_API_KEY_AQUI" || API_KEY.length < 10) {
+                alert("⚠️ ERROR: FALTA LA API KEY EN EL CÓDIGO.");
+                return;
