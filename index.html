@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DANTE DIAMANTE | RUTA 38433</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        /* ESTÉTICA: DARK MATTER / DIAMOND */
+        :root { --primary: #00ff41; --accent: #00ffff; --alert: #ff3333; --bg: #05070a; }
+        body { 
+            background-color: var(--bg); color: var(--primary); 
+            font-family: 'Share Tech Mono', monospace; 
+            margin: 0; height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        
+        /* Efectos Visuales */
+        .scan-line { position: fixed; top: 0; left: 0; width: 100%; height: 5px; background: rgba(0, 255, 65, 0.1); animation: scan 3s linear infinite; pointer-events: none; z-index: 10; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(0,0,0,0) 50%, rgba(0,0,0,0.9) 100%); pointer-events: none; z-index: 9; }
+        @keyframes scan { 0% { top: -5%; } 100% { top: 105%; } }
+
+        /* Contenedor Principal */
+        .container { 
+            width: 90%; max-width: 500px; 
+            border: 1px solid var(--primary); 
+            background: rgba(0, 15, 0, 0.95); 
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.1); 
+            padding: 20px; z-index: 2; text-align: center;
+            position: relative;
+        }
+
+        h1 { 
+            margin: 0 0 15px 0; font-size: 1.8em; 
+            text-shadow: 0 0 5px var(--primary); 
+            border-bottom: 1px dashed var(--primary); padding-bottom: 10px;
+        }
+
+        .status-bar { font-size: 0.7em; display: flex; justify-content: space-between; color: var(--accent); margin-bottom: 15px; }
+
+        /* Consola de Salida */
+        .console-output { 
+            background: #000; border: 1px solid #333; 
+            height: 150px; padding: 10px; 
+            text-align: left; font-size: 0.8em; 
+            overflow-y: auto; color: #ccffcc; margin-bottom: 20px; 
+        }
+
+        /* Botones de Control */
+        .controls { display: flex; flex-direction: column; gap: 10px; }
+        
+        button { 
+            background:
