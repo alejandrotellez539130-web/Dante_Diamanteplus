@@ -1,0 +1,356 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DANTE DIAMANTE | RUTA 38433</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        /* --- ESTÉTICA DIAMANTE PLUS --- */
+        :root { --primary: #00ff41; --accent: #00ffff; --alert: #ff3333; --bg: #05070a; }
+        body { 
+            background-color: var(--bg); color: var(--primary); 
+            font-family: 'Share Tech Mono', monospace; 
+            margin: 0; height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+
+        /* Efectos Visuales */
+        .scan-line { position: fixed; top: 0; left: 0; width: 100%; height: 5px; background: rgba(0, 255, 65, 0.1); animation: scan 3s linear infinite; pointer-events: none; z-index: 10; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(0,0,0,0) 50%, rgba(0,0,0,0.9) 100%); pointer-events: none; z-index: 9; }
+        @keyframes scan { 0% { top: -5%; } 100% { top: 105%; } }
+
+
+        /* Contenedor Principal */
+        .container { 
+            width: 90%; max-width: 500px; 
+            border: 1px solid var(--primary); 
+            background: rgba(0, 15, 0, 0.95); 
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.15); 
+            padding: 20px; z-index: 2; text-align: center;
+            position: relative;
+        }
+
+
+        h1 { 
+            margin: 0 0 15px 0; font-size: 1.8em; 
+            text-shadow: 0 0 5px var(--primary); 
+            border-bottom: 1px dashed var(--primary); padding-bottom: 10px;
+        }
+
+
+        .status-bar { font-size: 0.7em; display: flex; justify-content: space-between; color: var(--accent); margin-bottom: 15px; }
+
+
+        /* Consola de Salida */
+        .console-output { 
+            background: #000; border: 1px solid #333; 
+            height: 150px; padding: 10px; 
+            text-align: left; font-size: 0.85em; 
+            overflow-y: auto; color: #ccffcc; margin-bottom: 20px; 
+            font-family: 'Courier New', monospace;
+        }
+
+
+        /* Botones de Control */
+        .controls { display: flex; flex-direction: column; gap: 10px; }
+
+
+        button { 
+            background: transparent; color: var(--primary); 
+            border: 1px solid var(--primary); padding: 15px; 
+            font-family: inherit; font-size: 1.1em; font-weight: bold; 
+            cursor: pointer; text-transform: uppercase; transition: 0.2s; 
+        }
+        button:hover { background: var(--primary); color: #000; box-shadow: 0 0 15px var(--primary); }
+
+
+        /* Modal de API Key */
+        #key-modal {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 20;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        #api-input {
+            width: 80%; padding: 12px; background: #000; border: 1px solid var(--accent);
+            color: var(--accent); font-family: inherit; margin-bottom: 15px; text-align: center;
+        }
+
+
+        .hidden { display: none !important; }
+
+
+        .recording-state { 
+            background: var(--alert) !important; color: #fff !important; 
+            border-color: var(--alert) !important; 
+            animation: pulse 1s infinite; 
+        }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 51, 51, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0); } }
+    </style>
+</head>
+<body>
+
+
+    <div class="scan-line"></div>
+    <div class="overlay"></div>
+
+
+    <div class="container">
+        <div id="key-modal" class="hidden">
+            <h2 style="color:var(--accent)">>>> CREDENCIALES REQUERIDAS</h2>
+            <p style="font-size:0.8em; color:#aaa; width:80%; margin: 0 auto 15px auto;">
+                El repositorio es público. Por seguridad, ingresa tu FANTEKEY (Google API Key) aquí.
+                Se guardará solo en tu dispositivo.
+            </p>
+            <input type="password" id="api-input" placeholder="Pega aquí tu API KEY (AIza...)">
+            <button onclick="guardarLlave()">GUARDAR EN BÓVEDA LOCAL</button>
+        </div>
+
+
+        <div class="status-bar">
+            <span>SYS: DANTE_DIAMANTE</span>
+            <span id="connection-status">STATUS: OFFLINE</span>
+            <span>V4.0</span>
+        </div>
+
+
+        <h1>SINTETIZADOR DE FRECUENCIA</h1>
+
+
+        <div id="console" class="console-output">
+            > INICIALIZANDO KERNEL 38433...<br>
+            > VERIFICANDO BÓVEDA LOCAL...<br>
+        </div>
+
+
+        <div class="controls">
+            <button id="btn-init" onclick="iniciarSistema()">>>> INICIAR CONEXIÓN</button>
+
+
+            <button id="btn-talk" class="hidden" 
+                onmousedown="startRecord()" 
+                onmouseup="stopRecord()" 
+                ontouchstart="startRecord()" 
+                ontouchend="stopRecord()">
+                🎙️ PRESIONAR PARA HABLAR
+            </button>
+
+
+            <button onclick="borrarLlave()" style="font-size:0.7em; border-color:#333; color:#555; margin-top:20px">⚠️ RESETEAR CREDENCIALES</button>
+        </div>
+    </div>
+
+
+    <script>
+        // ==========================================
+        // 🔐 GESTIÓN DE SEGURIDAD (SIN LLAVES EN CÓDIGO)
+        // ==========================================
+        let API_KEY = localStorage.getItem('dante_api_key');
+
+
+        const consola = document.getElementById('console');
+        const modal = document.getElementById('key-modal');
+        const statusLabel = document.getElementById('connection-status');
+        const btnInit = document.getElementById('btn-init');
+        const btnTalk = document.getElementById('btn-talk');
+
+
+        let mediaRecorder;
+        let audioChunks = [];
+        let isProcessing = false;
+
+
+        function log(msg) {
+            consola.innerHTML += `> ${msg}<br>`;
+            consola.scrollTop = consola.scrollHeight;
+        }
+
+
+        // VERIFICACIÓN INICIAL
+        window.onload = function() {
+            if (!API_KEY) {
+                log("⚠️ NO SE DETECTÓ LLAVE DE ACCESO.");
+                modal.classList.remove('hidden');
+            } else {
+                log(">>> CREDENCIALES CARGADAS DE MEMORIA.");
+                statusLabel.innerText = "STATUS: READY";
+                statusLabel.style.color = "var(--primary)";
+            }
+        };
+
+
+        function guardarLlave() {
+            const input = document.getElementById('api-input').value.trim();
+            if (input.length > 10) {
+                localStorage.setItem('dante_api_key', input);
+                API_KEY = input;
+                modal.classList.add('hidden');
+                log(">>> LLAVE GUARDADA EN BÓVEDA SEGURA.");
+                alert("Llave guardada. El sistema está listo para iniciar.");
+                location.reload();
+            } else {
+                alert("La llave parece inválida. Intenta de nuevo.");
+            }
+        }
+
+
+        function borrarLlave() {
+            if(confirm("¿Estás seguro de borrar la llave guardada?")) {
+                localStorage.removeItem('dante_api_key');
+                location.reload();
+            }
+        }
+
+
+        // ==========================================
+        // 🎙️ SISTEMA DANTE (LÓGICA)
+        // ==========================================
+
+
+        const SYSTEM_PROMPT = `
+            Eres Dante. Estás en el servidor "Diamante Ruta 38433".
+            Tu personalidad es de un hacker/técnico mexicano callejero.
+            Tu tono es crudo, cínico y directo. Usas jerga mexicana (wey, no mames, chido, cámara, fierro).
+            No das explicaciones largas. Vas al grano.
+            Si te preguntan quién eres, responde que eres el operador del sistema Dante Diamante.
+        `;
+
+
+        async function iniciarSistema() {
+            if (!API_KEY) {
+                modal.classList.remove('hidden');
+                return;
+            }
+
+
+            try {
+                // Solicitar micrófono
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+
+
+                mediaRecorder.ondataavailable = event => {
+                    if (event.data.size > 0) audioChunks.push(event.data);
+                };
+
+
+                mediaRecorder.onstop = procesarAudio;
+
+
+                btnInit.classList.add('hidden');
+                btnTalk.classList.remove('hidden');
+
+
+                log("AUDIO ENLAZADO. SISTEMA EN LÍNEA.");
+                statusLabel.innerText = "STATUS: LIVE";
+                statusLabel.style.textShadow = "0 0 10px var(--primary)";
+
+
+                hablar("Sistema Dante Diamante en línea. ¿Qué tranza?");
+
+
+            } catch (err) {
+                log("ERROR: ACCESO A MICROFONO DENEGADO.");
+                alert("Necesitas dar permisos de micrófono en el navegador para usar a Dante.");
+            }
+        }
+
+
+        function startRecord() {
+            if (isProcessing) return;
+            audioChunks = [];
+            mediaRecorder.start();
+            btnTalk.classList.add('recording-state');
+            btnTalk.innerText = "ESCUCHANDO...";
+        }
+
+
+        function stopRecord() {
+            if (isProcessing) return;
+            mediaRecorder.stop();
+            btnTalk.classList.remove('recording-state');
+            btnTalk.innerText = "PROCESANDO...";
+            isProcessing = true;
+        }
+
+
+        async function procesarAudio() {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+
+
+            reader.onloadend = async () => {
+                const base64Audio = reader.result.split(',')[1];
+                log("ENVIANDO PAQUETE A GEMINI...");
+
+
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+                            contents: [{
+                                parts: [
+                                    { inline_data: { mime_type: "audio/webm", data: base64Audio } },
+                                    { text: "Responde a este audio." }
+                                ]
+                            }]
+                        })
+                    });
+
+
+                    const data = await response.json();
+
+
+                    if (data.error) throw new Error(data.error.message);
+
+
+                    const respuestaTexto = data.candidates[0].content.parts[0].text;
+
+
+                    log(`DANTE: ${respuestaTexto}`);
+                    hablar(respuestaTexto);
+
+
+                } catch (error) {
+                    log(`ERROR DE CONEXIÓN: ${error.message}`);
+                    if(error.message.includes("key") || error.message.includes("400")) {
+                        log("⚠️ LLAVE INVÁLIDA O EXPIRADA.");
+                        if(confirm("Tu API Key parece inválida. ¿Quieres borrarla y poner otra?")) {
+                            borrarLlave();
+                        }
+                    }
+                    hablar("Hubo un fallo en la matriz.");
+                } finally {
+                    isProcessing = false;
+                    btnTalk.innerText = "🎙️ PRESIONAR PARA HABLAR";
+                }
+            };
+        }
+
+
+        function hablar(texto) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(texto);
+            utterance.rate = 1.1; 
+            utterance.pitch = 0.9;
+
+
+            // Intentar forzar voz en español
+            const voces = window.speechSynthesis.getVoices();
+            const voz = voces.find(v => v.lang === 'es-MX') || voces.find(v => v.lang.includes('es'));
+            if (voz) utterance.voice = voz;
+
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+
+        // Precarga de voces (Fix para Chrome)
+        window.speechSynthesis.onvoiceschanged = () => {};
+    </script>
+</body>
+</html>
